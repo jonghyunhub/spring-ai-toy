@@ -1,0 +1,154 @@
+spring.application.name: core-api
+spring.profiles.active: local
+
+logging.config: classpath:logback/logback-${spring.profiles.active}.xml
+
+spring:
+  web.resources.add-mappings: false
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate.default_batch_fetch_size: 100
+
+server:
+  tomcat:
+    max-connections: 20000
+    threads:
+      max: 600
+      min-spare: 100
+
+example:
+  api:
+    url: https://default.example.example
+
+spring.cloud.openfeign:
+  client:
+    config:
+      example-api:
+        connectTimeout: 2100
+        readTimeout: 5000
+        loggerLevel: full
+  compression:
+    response:
+      enabled: false
+  httpclient:
+    max-connections: 2000
+    max-connections-per-route: 500
+
+jwt:
+  secret: your-secret-key-min-256-bits-long-please-change-this-in-production
+  access-token-validity: 3600000
+
+---
+spring.config.activate.on-profile: local
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+
+storage:
+  datasource:
+    core:
+      driver-class-name: org.postgresql.Driver
+      jdbc-url: jdbc:postgresql://localhost:5432/coredb
+      username: postgres
+      password: postgres
+      maximum-pool-size: 5
+      connection-timeout: 1100
+      keepalive-time: 30000
+      validation-timeout: 1000
+      max-lifetime: 600000
+      pool-name: core-db-pool
+      data-source-properties:
+        socketTimeout: 3000
+
+---
+spring.config.activate.on-profile: local-dev
+
+spring:
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+
+storage:
+  datasource:
+    core:
+      driver-class-name: org.postgresql.Driver
+      jdbc-url: jdbc:postgresql://${storage.database.core-db.url}
+      username: ${storage.database.core-db.username}
+      password: ${storage.database.core-db.password}
+      maximum-pool-size: 5
+      connection-timeout: 1100
+      keepalive-time: 30000
+      validation-timeout: 1000
+      max-lifetime: 600000
+      pool-name: core-db-pool
+      data-source-properties:
+        socketTimeout: 3000
+
+
+---
+spring.config.activate.on-profile: dev
+
+storage:
+  datasource:
+    core:
+      driver-class-name: org.postgresql.Driver
+      jdbc-url: jdbc:postgresql://${storage.database.core-db.url}
+      username: ${storage.database.core-db.username}
+      password: ${storage.database.core-db.password}
+      maximum-pool-size: 5
+      connection-timeout: 1100
+      keepalive-time: 30000
+      validation-timeout: 1000
+      max-lifetime: 600000
+      pool-name: core-db-pool
+      data-source-properties:
+        socketTimeout: 3000
+
+---
+spring.config.activate.on-profile: staging
+
+storage:
+  datasource:
+    core:
+      driver-class-name: org.postgresql.Driver
+      jdbc-url: jdbc:postgresql://${storage.database.core-db.url}
+      username: ${storage.database.core-db.username}
+      password: ${storage.database.core-db.password}
+      maximum-pool-size: 5
+      connection-timeout: 1100
+      keepalive-time: 30000
+      validation-timeout: 1000
+      max-lifetime: 600000
+      pool-name: core-db-pool
+      data-source-properties:
+        socketTimeout: 3000
+
+---
+spring.config.activate.on-profile: live
+
+storage:
+  datasource:
+    core:
+      driver-class-name: org.postgresql.Driver
+      jdbc-url: jdbc:postgresql://${storage.database.core-db.url}
+      username: ${storage.database.core-db.username}
+      password: ${storage.database.core-db.password}
+      maximum-pool-size: 25
+      connection-timeout: 1100
+      keepalive-time: 30000
+      validation-timeout: 1000
+      max-lifetime: 600000
+      pool-name: core-db-pool
+      data-source-properties:
+        socketTimeout: 3000
