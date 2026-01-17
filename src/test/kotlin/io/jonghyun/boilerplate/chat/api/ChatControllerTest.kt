@@ -85,7 +85,7 @@ class ChatControllerTest @Autowired constructor(
             .contentType(ContentType.JSON)
             .body(request)
             .`when`()
-            .post("/threads/$threadId/chats")
+            .post("/chats")
             .then()
             .statusCode(HttpStatus.OK.value())
             .body("chatId", greaterThan(0))
@@ -111,40 +111,12 @@ class ChatControllerTest @Autowired constructor(
             .contentType(ContentType.JSON)
             .body(request)
             .`when`()
-            .post("/threads/$threadId/chats")
+            .post("/chats")
             .then()
             .statusCode(HttpStatus.OK.value())
             .body("answer", notNullValue())
     }
-
-    @Test
-    @DisplayName("채팅 생성 실패 - 다른 사용자의 스레드, 500 Internal Server Error")
-    fun createChatFailAccessDenied() {
-        // given - 다른 사용자 생성
-        val otherUser = UserEntity(
-            email = "other@example.com",
-            password = passwordEncoder.encode("password123"),
-            name = "Other User",
-        )
-        val savedOtherUser = userRepository.save(otherUser)
-        val otherToken = jwtTokenProvider.generateAccessToken(savedOtherUser.id)
-
-        val request = CreateChatRequest(
-            question = "테스트 질문",
-            isStreaming = false,
-        )
-
-        // when & then - 다른 사용자로 채팅 생성 시도
-        RestAssured
-            .given()
-            .header("Authorization", "Bearer $otherToken")
-            .contentType(ContentType.JSON)
-            .body(request)
-            .`when`()
-            .post("/threads/$threadId/chats")
-            .then()
-            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-    }
+    
 
     @Test
     @DisplayName("컨텍스트가 포함된 채팅 생성 성공")
@@ -160,7 +132,7 @@ class ChatControllerTest @Autowired constructor(
             .header("Authorization", "Bearer $accessToken")
             .contentType(ContentType.JSON)
             .body(firstRequest)
-            .post("/threads/$threadId/chats")
+            .post("/chats")
 
         // 두 번째 채팅 (컨텍스트 포함)
         val secondRequest = CreateChatRequest(
@@ -175,7 +147,7 @@ class ChatControllerTest @Autowired constructor(
             .contentType(ContentType.JSON)
             .body(secondRequest)
             .`when`()
-            .post("/threads/$threadId/chats")
+            .post("/chats")
             .then()
             .statusCode(HttpStatus.OK.value())
             .body("question", equalTo("내 이름이 뭐라고?"))
@@ -202,7 +174,7 @@ class ChatControllerTest @Autowired constructor(
             .contentType(ContentType.JSON)
             .body(request)
             .`when`()
-            .post("/threads/$threadId/chats/stream")
+            .post("/chats/stream")
             .then()
             .statusCode(HttpStatus.OK.value())
             .extract()
@@ -250,7 +222,7 @@ class ChatControllerTest @Autowired constructor(
             .contentType(ContentType.JSON)
             .body(request)
             .`when`()
-            .post("/threads/$threadId/chats")
+            .post("/chats")
             .then()
             .statusCode(HttpStatus.UNAUTHORIZED.value())
     }

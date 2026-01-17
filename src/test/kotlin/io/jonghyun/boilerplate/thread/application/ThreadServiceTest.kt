@@ -23,6 +23,7 @@ class ThreadServiceTest {
     @BeforeEach
     fun setUp() {
         threadRepository = mockk()
+        chatRepository = mockk()
         threadService = ThreadService(threadRepository, chatRepository)
     }
 
