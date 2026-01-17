@@ -1,5 +1,6 @@
 package io.jonghyun.boilerplate.client.ai
 
+import feign.Response
 import io.jonghyun.boilerplate.client.ai.dto.ClaudeRequest
 import io.jonghyun.boilerplate.client.ai.dto.ClaudeResponse
 import org.springframework.cloud.openfeign.FeignClient
@@ -17,4 +18,13 @@ interface ClaudeFeignClient {
         @RequestHeader("content-type") contentType: String = "application/json",
         @RequestBody request: ClaudeRequest
     ): ClaudeResponse
+
+
+    @PostMapping("/v1/messages")
+    fun createMessageStream(
+        @RequestHeader("x-api-key") apiKey: String,
+        @RequestHeader("anthropic-version") version: String = "2023-06-01",
+        @RequestHeader("content-type") contentType: String = "application/json",
+        @RequestBody request: ClaudeRequest
+    ): Response
 }
