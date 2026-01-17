@@ -38,6 +38,8 @@ class AuthServiceTest {
         val name = "Test User"
         val encodedPassword = "encodedPassword123"
 
+        every { userRepository.getAdvisoryLock(any()) } returns Unit
+        every { userRepository.releaseAdvisoryLock(any()) } returns Unit
         every { userRepository.existsByEmail(email) } returns false
         every { passwordEncoder.encode(password) } returns encodedPassword
         every { userRepository.save(any()) } answers {
@@ -54,6 +56,8 @@ class AuthServiceTest {
         assertEquals(encodedPassword, result.password)
         assertEquals(name, result.name)
 
+        verify(exactly = 1) { userRepository.getAdvisoryLock(any()) }
+        verify(exactly = 1) { userRepository.releaseAdvisoryLock(any()) }
         verify(exactly = 1) { userRepository.existsByEmail(email) }
         verify(exactly = 1) { passwordEncoder.encode(password) }
         verify(exactly = 1) { userRepository.save(any()) }
@@ -67,6 +71,8 @@ class AuthServiceTest {
         val password = "password123"
         val name = "Test User"
 
+        every { userRepository.getAdvisoryLock(any()) } returns Unit
+        every { userRepository.releaseAdvisoryLock(any()) } returns Unit
         every { userRepository.existsByEmail(email) } returns true
 
         // when & then
@@ -75,6 +81,8 @@ class AuthServiceTest {
         }
 
         assertEquals("Email already exists: $email", exception.message)
+        verify(exactly = 1) { userRepository.getAdvisoryLock(any()) }
+        verify(exactly = 1) { userRepository.releaseAdvisoryLock(any()) }
         verify(exactly = 1) { userRepository.existsByEmail(email) }
         verify(exactly = 0) { passwordEncoder.encode(any()) }
         verify(exactly = 0) { userRepository.save(any()) }
