@@ -28,5 +28,6 @@ CREATE TABLE IF NOT EXISTS chats
     thread_id BIGINT NOT NULL,
     question  TEXT   NOT NULL,
     answer    TEXT   NOT NULL,
+    model TEXT   NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

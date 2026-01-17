@@ -20,6 +20,9 @@ class ChatEntity(
 
     @Column(nullable = false, columnDefinition = "TEXT")
     val answer: String,
+
+    @Column(nullable = false, columnDefinition = "TEXT")
+    val model: String,
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

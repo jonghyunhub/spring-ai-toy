@@ -6,6 +6,7 @@ import io.jonghyun.boilerplate.client.ai.AiClient
 import io.jonghyun.boilerplate.client.ai.ChatMessage
 import io.jonghyun.boilerplate.thread.domain.ThreadEntity
 import io.jonghyun.boilerplate.thread.repository.ThreadRepository
+import io.jonghyun.boilerplate.user.repository.UserRepository
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -24,6 +25,7 @@ class ChatServiceTest {
     private lateinit var chatService: ChatService
     private lateinit var threadRepository: ThreadRepository
     private lateinit var chatRepository: ChatRepository
+    private lateinit var userRepository: UserRepository
     private lateinit var aiClient: AiClient
 
     @BeforeEach
@@ -31,7 +33,7 @@ class ChatServiceTest {
         threadRepository = mockk()
         chatRepository = mockk()
         aiClient = mockk()
-        chatService = ChatService(threadRepository, chatRepository, aiClient)
+        chatService = ChatService(threadRepository, chatRepository, userRepository ,aiClient)
     }
 
     @Test

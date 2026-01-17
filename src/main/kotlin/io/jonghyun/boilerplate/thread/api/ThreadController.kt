@@ -5,6 +5,7 @@ import io.jonghyun.boilerplate.thread.api.res.ThreadApiResponse
 import io.jonghyun.boilerplate.thread.application.ThreadService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -62,5 +63,14 @@ class ThreadController(
                 createdAt = response.createdAt,
             ),
         )
+    }
+
+    @DeleteMapping("/{threadId}")
+    fun deleteThread(
+        @CurrentUser userId: Long,
+        @PathVariable threadId: Long,
+    ): ResponseEntity<Void> {
+        threadService.deleteThread(userId, threadId)
+        return ResponseEntity.noContent().build()
     }
 }

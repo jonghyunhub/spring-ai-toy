@@ -1,5 +1,6 @@
 package io.jonghyun.boilerplate.thread.application
 
+import io.jonghyun.boilerplate.chat.repository.ChatRepository
 import io.jonghyun.boilerplate.thread.domain.ThreadEntity
 import io.jonghyun.boilerplate.thread.repository.ThreadRepository
 import io.mockk.every
@@ -17,11 +18,12 @@ class ThreadServiceTest {
 
     private lateinit var threadService: ThreadService
     private lateinit var threadRepository: ThreadRepository
+    private lateinit var chatRepository: ChatRepository
 
     @BeforeEach
     fun setUp() {
         threadRepository = mockk()
-        threadService = ThreadService(threadRepository)
+        threadService = ThreadService(threadRepository, chatRepository)
     }
 
     @Test
