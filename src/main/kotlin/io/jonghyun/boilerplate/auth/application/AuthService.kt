@@ -28,12 +28,18 @@ class AuthService(
 
     @Transactional
     fun signUp(email: String, password: String, name: String): UserEntity {
-        if (userRepository.existsByEmail(email)) {
-            throw IllegalArgumentException("Email already exists: $email")
-        }
+        userRepository.getAdvisoryLock(email.hashCode().toLong())
 
-        val encodedPassword = passwordEncoder.encode(password)
-        val userEntity = UserEntity(email, encodedPassword, name)
-        return userRepository.save(userEntity)
+        try {
+            if (userRepository.existsByEmail(email)) {
+                throw IllegalArgumentException("Email already exists: $email")
+            }
+
+            val encodedPassword = passwordEncoder.encode(password)
+            val userEntity = UserEntity(email, encodedPassword, name)
+            return userRepository.save(userEntity)
+        } finally {
+            userRepository.releaseAdvisoryLock(email.hashCode().toLong())
+        }
     }
 }
