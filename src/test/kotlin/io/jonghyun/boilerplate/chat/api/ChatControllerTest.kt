@@ -116,7 +116,7 @@ class ChatControllerTest @Autowired constructor(
             .statusCode(HttpStatus.OK.value())
             .body("answer", notNullValue())
     }
-    
+
 
     @Test
     @DisplayName("컨텍스트가 포함된 채팅 생성 성공")

@@ -23,6 +23,9 @@ example:
   api:
     url: https://default.example.example
 
+claude:
+  api-key: your-claude-api-key
+
 spring.cloud.openfeign:
   client:
     config:

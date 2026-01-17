@@ -23,7 +23,7 @@ class ChatService(
     private val threadRepository: ThreadRepository,
     private val chatRepository: ChatRepository,
     private val userRepository: UserRepository,
-    private val aiClient: AiClient,
+    private val aiClients: Map<String, AiClient>,
 ) {
 
     companion object {
@@ -43,7 +43,7 @@ class ChatService(
         val messages = buildChatMessages(thread.id, question)
 
         // 3. AI API 호출
-        val answer = aiClient.chat(messages, model)
+        val answer = selectClient(model).chat(messages, model)
 
         // 4. Chat 저장
         val chat = ChatEntity(
@@ -82,7 +82,7 @@ class ChatService(
 
         // 3. AI API 스트리밍 호출
         val fullAnswer = StringBuilder()
-        aiClient.chatStream(messages, model) { chunk ->
+        selectClient(model).chatStream(messages, model) { chunk ->
             fullAnswer.append(chunk)
             onChunk(chunk)
         }
@@ -211,5 +211,18 @@ class ChatService(
         }
 
         return contextMessages + ChatMessage(role = MessageRole.USER, content = newQuestion)
+    }
+
+    // 모델명에 따라 적절한 클라이언트를 반환하는 헬퍼 함수
+    private fun selectClient(model: String?): AiClient {
+        return if (model == "claude") {
+            // "claudeAiClient"라는 이름의 빈을 가져옴
+            aiClients["claudeAiClient"]
+                ?: throw IllegalStateException("Claude 클라이언트 빈을 찾을 수 없습니다.")
+        } else {
+            // 그 외의 경우(null 포함) Mock 사용
+            aiClients["mockAiClient"]
+                ?: throw IllegalStateException("Mock 클라이언트 빈을 찾을 수 없습니다.")
+        }
     }
 }

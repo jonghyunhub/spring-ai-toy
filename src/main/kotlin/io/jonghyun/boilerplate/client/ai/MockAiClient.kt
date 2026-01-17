@@ -2,7 +2,7 @@ package io.jonghyun.boilerplate.client.ai
 
 import org.springframework.stereotype.Component
 
-@Component
+@Component("mockAiClient")
 class MockAiClient : AiClient {
 
     override fun chat(messages: List<ChatMessage>, model: String?): String {
