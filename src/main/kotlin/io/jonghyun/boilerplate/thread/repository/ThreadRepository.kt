@@ -10,4 +10,5 @@ interface ThreadRepository : JpaRepository<ThreadEntity, Long> {
     fun findAllByUserIdOrderByLastChatAtDesc(userId: Long): List<ThreadEntity>
     fun findAllByUserId(userId: Long, pageable: Pageable): Page<ThreadEntity>
     fun findAllBy(pageable: Pageable): Page<ThreadEntity>
+    fun findFirstByUserIdOrderByLastChatAtDesc(userId: Long): ThreadEntity?
 }

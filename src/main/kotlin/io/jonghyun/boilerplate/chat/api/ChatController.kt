@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
@@ -25,10 +24,9 @@ class ChatController(
     private val chatService: ChatService,
 ) {
 
-    @PostMapping("/threads/{threadId}/chats")
+    @PostMapping("/chats")
     fun createChat(
         @CurrentUser userId: Long,
-        @PathVariable threadId: Long,
         @RequestBody request: CreateChatRequest,
     ): ResponseEntity<Any> {
         // 스트리밍 요청일 경우 스트리밍 엔드포인트로 리다이렉트
@@ -39,7 +37,6 @@ class ChatController(
 
         val response = chatService.createChat(
             userId = userId,
-            threadId = threadId,
             question = request.question,
             model = request.model,
         )
@@ -55,10 +52,9 @@ class ChatController(
         )
     }
 
-    @PostMapping("/threads/{threadId}/chats/stream", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
+    @PostMapping("/chats/stream", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
     fun createChatStream(
         @CurrentUser userId: Long,
-        @PathVariable threadId: Long,
         @RequestBody request: CreateChatRequest,
     ): SseEmitter {
         val emitter = SseEmitter(60000L) // 60초 타임아웃
@@ -67,7 +63,6 @@ class ChatController(
             try {
                 val chatId = chatService.createChatStream(
                     userId = userId,
-                    threadId = threadId,
                     question = request.question,
                     model = request.model,
                 ) { chunk ->

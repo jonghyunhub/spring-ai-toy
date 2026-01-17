@@ -9,12 +9,14 @@ import io.jonghyun.boilerplate.chat.repository.ChatRepository
 import io.jonghyun.boilerplate.client.ai.AiClient
 import io.jonghyun.boilerplate.client.ai.ChatMessage
 import io.jonghyun.boilerplate.client.ai.MessageRole
+import io.jonghyun.boilerplate.thread.domain.ThreadEntity
 import io.jonghyun.boilerplate.thread.repository.ThreadRepository
 import io.jonghyun.boilerplate.user.domain.UserRole
 import io.jonghyun.boilerplate.user.repository.UserRepository
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Service
 class ChatService(
@@ -24,26 +26,28 @@ class ChatService(
     private val aiClient: AiClient,
 ) {
 
+    companion object {
+        private const val THREAD_EXPIRATION_MINUTES = 30L
+    }
+
     @Transactional
     fun createChat(
         userId: Long,
-        threadId: Long,
         question: String,
         model: String?,
     ): ChatResponse {
-        // 1. 스레드 존재 여부 & 권한 검증
-        val thread = threadRepository.findByIdAndUserId(threadId, userId)
-            ?: throw IllegalArgumentException("Thread not found or access denied")
+        // 1. 스레드 찾기 또는 생성
+        val thread = createThread(userId)
 
         // 2. 이전 채팅 조회 (컨텍스트 생성)
-        val messages = buildChatMessages(threadId, question)
+        val messages = buildChatMessages(thread.id, question)
 
         // 3. AI API 호출
         val answer = aiClient.chat(messages, model)
 
         // 4. Chat 저장
         val chat = ChatEntity(
-            threadId = threadId,
+            threadId = thread.id,
             question = question,
             answer = answer,
             model = model ?: "default",
@@ -66,17 +70,15 @@ class ChatService(
     @Transactional
     fun createChatStream(
         userId: Long,
-        threadId: Long,
         question: String,
         model: String?,
         onChunk: (String) -> Unit,
     ): Long {
-        // 1. 스레드 존재 여부 & 권한 검증
-        val thread = threadRepository.findByIdAndUserId(threadId, userId)
-            ?: throw IllegalArgumentException("Thread not found or access denied")
+        // 1. 스레드 찾기 또는 생성
+        val thread = createThread(userId)
 
         // 2. 이전 채팅 조회 (컨텍스트 생성)
-        val messages = buildChatMessages(threadId, question)
+        val messages = buildChatMessages(thread.id, question)
 
         // 3. AI API 스트리밍 호출
         val fullAnswer = StringBuilder()
@@ -87,7 +89,7 @@ class ChatService(
 
         // 4. Chat 저장
         val chat = ChatEntity(
-            threadId = threadId,
+            threadId = thread.id,
             question = question,
             answer = fullAnswer.toString(),
             model = model ?: "default",
@@ -164,6 +166,35 @@ class ChatService(
             currentPage = threadPage.number,
             pageSize = threadPage.size,
         )
+    }
+
+    /**
+     * 스레드를 찾거나 생성합니다.
+     *   1. 첫 질문이거나
+     *   2. 마지막 질문 후 30분이 지난 경우 -> 새 스레드 생성
+     *   3. 30분 이내에 다시 질문할 경우 -> 기존 스레드 유지
+     */
+    private fun createThread(userId: Long): ThreadEntity {
+        val recentThread = threadRepository.findFirstByUserIdOrderByLastChatAtDesc(userId)
+
+        // 첫 질문이거나, 마지막 질문 후 30분이 지난 경우 새 스레드 생성
+        if (recentThread == null || isThreadExpired(recentThread)) {
+            val newThread = ThreadEntity(userId = userId)
+            return threadRepository.save(newThread)
+        }
+
+        // 30분 이내에 다시 질문할 경우 기존 스레드 반환
+        return recentThread
+    }
+
+    /**
+     * 스레드가 만료되었는지 확인합니다.
+     * 마지막 채팅 시간으로부터 30분이 지났으면 만료된 것으로 간주합니다.
+     */
+    private fun isThreadExpired(thread: ThreadEntity): Boolean {
+        val now = LocalDateTime.now()
+        val expirationTime = thread.lastChatAt.plusMinutes(THREAD_EXPIRATION_MINUTES)
+        return now.isAfter(expirationTime)
     }
 
     private fun buildChatMessages(threadId: Long, newQuestion: String): List<ChatMessage> {
